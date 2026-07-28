@@ -1,0 +1,3 @@
+- [x] Enable Edge-to-Edge in `MainActivity`
+- [x] Apply `safeDrawingPadding` to `AdvancedCalculatorScreen`
+- [x] Verify build and layout
