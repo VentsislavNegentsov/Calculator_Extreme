@@ -105,9 +105,10 @@ fun AdvancedCalculatorScreen() {
                     SegmentedButton(
                         selected = currentMode == mode,
                         onClick = { currentMode = mode },
-                        shape = SegmentedButtonDefaults.itemShape(index = index, count = 3)
+                        shape = SegmentedButtonDefaults.itemShape(index = index, count = 3),
+                        icon = {}
                     ) {
-                        Text(mode.name.take(4), fontSize = 12.sp)
+                        Text(mode.name, fontSize = 12.sp)
                     }
                 }
             }
@@ -193,7 +194,7 @@ fun ScientificKeypad(
     onClear: () -> Unit
 ) {
     val rows = listOf(
-        listOf("DEG/RAD", "sin", "cos", "tan", "C"),
+        listOf("DEG/RAD", "sin", "cos", "tan", "AC"),
         listOf("atan", "sqrt", "log", "ln", "DEL"),
         listOf("(", ")", "^", "π", "/"),
         listOf("7", "8", "9", "e", "*"),
@@ -211,7 +212,7 @@ fun ScientificKeypad(
                     modifier = Modifier.weight(weight).height(48.dp),
                     onClick = {
                         when (btn) {
-                            "C" -> onClear()
+                            "AC" -> onClear()
                             "DEL" -> onDelete()
                             "DEG/RAD" -> onToggleDeg()
                             "sin", "cos", "tan", "atan", "sqrt", "log", "ln" -> onAppend("$btn(")
@@ -227,7 +228,7 @@ fun ScientificKeypad(
 @Composable
 fun BasicKeypad(onAppend: (String) -> Unit, onDelete: () -> Unit, onClear: () -> Unit) {
     val rows = listOf(
-        listOf("C", "(", ")", "/", "DEL"),
+        listOf("AC", "(", ")", "/", "DEL"),
         listOf("7", "8", "9", "*", "^"),
         listOf("4", "5", "6", "-", "%"),
         listOf("1", "2", "3", "+", "="),
@@ -242,7 +243,7 @@ fun BasicKeypad(onAppend: (String) -> Unit, onDelete: () -> Unit, onClear: () ->
                     modifier = Modifier.weight(1f).height(54.dp),
                     onClick = {
                         when (btn) {
-                            "C" -> onClear()
+                            "AC" -> onClear()
                             "DEL" -> onDelete()
                             else -> onAppend(btn)
                         }
@@ -256,32 +257,36 @@ fun BasicKeypad(onAppend: (String) -> Unit, onDelete: () -> Unit, onClear: () ->
 @Composable
 fun ProgrammerKeypad(onAppend: (String) -> Unit, onDelete: () -> Unit, onClear: () -> Unit) {
     val rows = listOf(
-        listOf("A", "B", "C", "C", "DEL"),
+        listOf("A", "B", "C", "AC", "DEL"),
         listOf("D", "E", "F", "/", "*"),
         listOf("7", "8", "9", "-", "AND"),
         listOf("4", "5", "6", "+", "OR"),
         listOf("1", "2", "3", "XOR", "NOT"),
-        listOf("0", "(", ")", "<<", ">>")
+        listOf("0", "(", ")", "<<", ">>"),
+        listOf("=", "=", "=", "=", "=")
     )
 
     rows.forEach { row ->
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.fillMaxWidth()) {
             row.forEach { btn ->
+                val weight = if (btn == "=") 5f else 1f
                 CalculatorButton(
                     symbol = btn,
-                    modifier = Modifier.weight(1f).height(48.dp),
+                    modifier = Modifier.weight(weight).height(48.dp),
                     onClick = {
                         when (btn) {
-                            "C" -> onClear()
+                            "AC" -> onClear()
                             "DEL" -> onDelete()
                             "AND" -> onAppend("&")
                             "OR" -> onAppend("|")
                             "XOR" -> onAppend("^")
                             "NOT" -> onAppend("~")
+                            "=" -> onAppend("=") // calculateResult is called inside appendInput
                             else -> onAppend(btn)
                         }
                     }
                 )
+                if (btn == "=") return@Row // Only draw one '=' button for the whole row
             }
         }
     }
@@ -290,7 +295,7 @@ fun ProgrammerKeypad(onAppend: (String) -> Unit, onDelete: () -> Unit, onClear: 
 @Composable
 fun CalculatorButton(symbol: String, modifier: Modifier, onClick: () -> Unit) {
     val isOperator = symbol in listOf("+", "-", "*", "/", "^", "%", "=", "&", "|", "~", "<<", ">>")
-    val isSpecial = symbol in listOf("C", "DEL")
+    val isSpecial = symbol in listOf("AC", "DEL")
 
     Button(
         onClick = onClick,

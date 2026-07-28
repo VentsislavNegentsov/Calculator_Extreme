@@ -1,21 +1,29 @@
-# Walkthrough - Bottom Navigation Bar Fix
+# Walkthrough - Programmer Keypad and Button Conflict Fixes
 
-I have updated the application to handle system insets, which will prevent the calculator buttons from being obscured by the 3-button navigation bar on your Redmi Note 14s.
+I have fixed the issues in the Programmer keypad and resolved the naming conflict between the Hexadecimal "C" and the "Clear" button.
 
 ## Changes Made
 
 ### UI Infrastructure
 
 #### [MainActivity.kt](file:///C:/Users/vents/AndroidStudioProjects/Calculator_Extreme/app/src/main/java/com/example/myapplication/MainActivity.kt)
-- **Enabled Edge-to-Edge**: Added `enableEdgeToEdge()` call in `onCreate`. This allows the app to occupy the full screen space, including the areas behind the status and navigation bars.
-- **Applied Safe Drawing Padding**: Added `.safeDrawingPadding()` to the root `Column` of the `AdvancedCalculatorScreen`. This ensures that all content is automatically pushed inward to avoid overlapping with the status bar at the top and the navigation buttons at the bottom.
+- **Renamed Clear Button to "AC"**: To avoid confusion with the Hexadecimal digit "C", all "Clear" buttons in the Basic, Scientific, and Programmer keypads now use the label "AC" (All Clear).
+- **Fixed Programmer Keypad Layout**:
+    - Replaced the duplicate "C" in the first row with the new "AC" button.
+    - The Hexadecimal digit "C" now uses the standard button color (secondaryContainer) instead of the "special" color.
+    - Added a new row at the bottom with a full-width **"="** button for calculations.
+- **Updated Styling Logic**: Updated `CalculatorButton` to correctly identify "AC" and "DEL" as special actions, ensuring they maintain their distinct error/warning color.
 
 ## Verification Results
 
 ### Automated Tests
-- Ran `:app:assembleDebug` - **Passed**. The code compiles correctly with the new edge-to-edge APIs.
+- Ran `:app:assembleDebug` - **Passed**.
 
 ### Manual Verification Recommended
-- Launch the app on your phone.
-- You should now see a consistent gap (the "plank line") at the bottom where the 3 buttons are, and the calculator keypad should be fully visible above them.
-- The top header should also no longer overlap with the clock or notification icons.
+- **Programmer Mode**:
+    - Check that the first row is `A B C AC DEL`.
+    - Check that the 'C' button has a light purple background (same as A and B).
+    - Check that the 'AC' button has a pink/red background.
+    - Check that there is a large `=` button at the very bottom.
+- **Basic/Scientific Modes**:
+    - Verify the clear button now says "AC" and functions correctly.

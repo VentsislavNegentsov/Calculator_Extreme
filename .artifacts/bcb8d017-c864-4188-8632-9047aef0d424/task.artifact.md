@@ -1,3 +1,5 @@
-- [x] Enable Edge-to-Edge in `MainActivity`
-- [x] Apply `safeDrawingPadding` to `AdvancedCalculatorScreen`
-- [x] Verify build and layout
+- [x] Rename "Clear" button to "AC" in all keypads
+- [x] Update `CalculatorButton` color logic for "AC"
+- [x] Add "=" button to `ProgrammerKeypad`
+- [x] Update click handlers for "AC"
+- [x] Verify functionality across all modes
