@@ -92,7 +92,7 @@ fun AdvancedCalculatorScreen() {
         // Top Header Caption
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
             Text(
-                text = "Calculator by Ventsislav Negentsov",
+                text = "Calculator Extreme by Ventsislav Negentsov",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
