@@ -1,4 +1,6 @@
-- [x] Update `MathEvaluator` to support multi-character Hex and bitwise operators
-- [x] Pass `isHex` flag from `AdvancedCalculatorScreen` to `evaluate`
-- [x] Verify `EB - EA = 1` in Programmer Mode
-- [x] Verify `2 ^ 3 = 8` in Scientific Mode
+- [x] Add `programmerRadix` state and update `calculateResult` logic
+- [x] Implement base selection buttons for Programmer mode
+- [x] Update `MathEvaluator` to support dynamic radix and all bitwise ops in Programmer mode
+- [x] Decrease font size for main mode buttons
+- [x] Verify fix for "Error" in Programmer mode
+- [x] Verify result formatting across HEX/DEC/OCT/BIN

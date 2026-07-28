@@ -1,18 +1,23 @@
-# Walkthrough - Hexadecimal and Bitwise Fixes
+# Walkthrough - Programmer Mode Enhancements v1.3
 
-I have fixed the "major bug" in Programmer Mode where multi-character hexadecimal numbers were not being parsed correctly, and I've also implemented full support for bitwise operators.
+I have significantly improved the Programmer Mode, addressing the "Error" bugs and adding flexible base selection (HEX, DEC, OCT, BIN). I've also refined the UI for better fit on real devices.
 
 ## Changes Made
 
-### Math Engine Refinement
+### Programmer Mode Overhaul
 
 #### [MainActivity.kt](file:///C:/Users/vents/AndroidStudioProjects/Calculator_Extreme/app/src/main/java/com/example/myapplication/MainActivity.kt)
-- **Multi-character Hex Support**: Updated `MathEvaluator` to correctly parse strings like `EB`, `FA`, etc., as base-16 numbers when in Programmer Mode.
-- **Bitwise Operators**:
-    - Implemented `<<` (Left Shift), `>>` (Right Shift), `&` (AND), `|` (OR), and `^` (XOR) with proper bitwise precedence.
-    - Resolved a conflict where `^` acted as a power operator; it now acts as **XOR** in Programmer Mode and **Power** in Scientific Mode.
-- **Hex Result Display**: The real-time result in Programmer Mode now correctly displays in **Hexadecimal** (uppercase).
-- **Cleanup**: Added logic to handle the trailing `=` sign in the expression to prevent it from causing "Error".
+- **Dynamic Base Selection**: Added a new row of small buttons (**HEX**, **DEC**, **OCT**, **BIN**) that appears only in Programmer Mode.
+- **Unified Result Formatting**: The main result display now automatically follows the selected base. For example, if **BIN** is selected, all results will be shown in binary.
+- **Robust Math Engine**:
+    - Updated `MathEvaluator` to support all standard operations (+, -, *, /, %) and bitwise operations (AND, OR, XOR, SHL, SHR) across *any* selected base.
+    - Added error handling for incomplete expressions to prevent "Error" from flashing while typing.
+- **Version Upgrade**: The app is effectively at **v1.3** with these functional improvements.
+
+### UI Refinement
+
+- **Font Optimization**: Decreased the font size of the main mode buttons (BASIC, SCIENTIFIC, PROGRAMMER, RETRO) to **9.sp**. This ensures the text fits on a single line even on narrower screens where "PROGRAMMER" was previously wrapping.
+- **Responsive Layout**: Added proper spacing between the main mode row and the new base selection row.
 
 ## Verification Results
 
@@ -20,7 +25,8 @@ I have fixed the "major bug" in Programmer Mode where multi-character hexadecima
 - Ran `:app:assembleDebug` - **Passed**.
 
 ### Manual Verification Recommended
-- **Hex Arithmetic**: Type `EB - EA` in Programmer Mode; it should now correctly show `= 1`.
-- **Hex Display**: Verify that results like `F + 1` show `10` (the Hex representation of 16).
-- **Bitwise Logic**: Verify `1 << 4` equals `10` (Hex).
-- **Scientific Regression**: Verify `2 ^ 3` still equals `8` in Scientific Mode.
+1.  **Switch to Programmer Mode**:
+    - Verify the sub-row with HEX/DEC/OCT/BIN appears.
+    - Verify that clicking them changes the result formatting instantly.
+2.  **Test Hex Arithmetic**: `EB - EA` should show `1` in HEX, `1` in DEC, etc.
+3.  **Check Fit**: Confirm that "PROGRAMMER" and "RETRO" stay on one line.

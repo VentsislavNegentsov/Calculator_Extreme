@@ -46,6 +46,7 @@ fun AdvancedCalculatorScreen(isRetroMode: Boolean, onToggleRetro: (Boolean) -> U
     var resultText by remember { mutableStateOf("0") }
     var currentMode by remember { mutableStateOf(CalcMode.SCIENTIFIC) }
     var isDeg by remember { mutableStateOf(true) }
+    var programmerRadix by remember { mutableStateOf(16) }
 
     // Evaluates expression in real-time as user types
     fun calculateResult() {
@@ -53,20 +54,31 @@ fun AdvancedCalculatorScreen(isRetroMode: Boolean, onToggleRetro: (Boolean) -> U
             resultText = "0"
             return
         }
-        val cleanExpr = expression.removeSuffix("=")
-        if (cleanExpr.isBlank()) {
+        var cleanExpr = expression.removeSuffix("=")
+        
+        // Remove trailing operators for real-time calculation
+        val operators = listOf("+", "-", "*", "/", "%", "&", "|", "^", "<<", ">>", "(", "~", "<", ">")
+        while (operators.any { cleanExpr.endsWith(it) } && cleanExpr.isNotEmpty()) {
+            cleanExpr = cleanExpr.dropLast(1).trim()
+        }
+
+        if (cleanExpr.isBlank() || operators.any { cleanExpr == it }) {
             resultText = "0"
             return
         }
+        
         try {
-            val evalResult = MathEvaluator.evaluate(cleanExpr, isDeg, currentMode == CalcMode.PROGRAMMER)
+            val radix = if (currentMode == CalcMode.PROGRAMMER) programmerRadix else 10
+            val evalResult = MathEvaluator.evaluate(cleanExpr, isDeg, radix)
             resultText = if (evalResult % 1.0 == 0.0 && !evalResult.isInfinite()) {
-                evalResult.toLong().toString(if (currentMode == CalcMode.PROGRAMMER) 16 else 10).uppercase()
+                evalResult.toLong().toString(radix).uppercase()
             } else {
                 evalResult.toString()
             }
         } catch (e: Exception) {
-            resultText = "Error"
+            // Keep the previous result or show Error only if it's a real syntax error
+            // instead of just an incomplete expression
+            if (expression.endsWith("=")) resultText = "Error"
         }
     }
 
@@ -87,7 +99,7 @@ fun AdvancedCalculatorScreen(isRetroMode: Boolean, onToggleRetro: (Boolean) -> U
         resultText = "0"
     }
 
-    val numericValue = resultText.toLongOrNull()
+    val numericValue = if (currentMode == CalcMode.PROGRAMMER) resultText.toLongOrNull(programmerRadix) else resultText.toLongOrNull()
 
     Column(
         modifier = Modifier
@@ -126,7 +138,7 @@ fun AdvancedCalculatorScreen(isRetroMode: Boolean, onToggleRetro: (Boolean) -> U
                             inactiveBorderColor = Color.DarkGray
                         ) else SegmentedButtonDefaults.colors()
                     ) {
-                        Text(mode.name, fontSize = 10.sp)
+                        Text(mode.name, fontSize = 9.sp)
                     }
                 }
                 
@@ -145,7 +157,35 @@ fun AdvancedCalculatorScreen(isRetroMode: Boolean, onToggleRetro: (Boolean) -> U
                         inactiveBorderColor = Color.DarkGray
                     ) else SegmentedButtonDefaults.colors()
                 ) {
-                    Text("RETRO", fontSize = 10.sp)
+                    Text("RETRO", fontSize = 9.sp)
+                }
+            }
+
+            if (currentMode == CalcMode.PROGRAMMER) {
+                Spacer(modifier = Modifier.height(6.dp))
+                SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                    val bases = listOf(16 to "HEX", 10 to "DEC", 8 to "OCT", 2 to "BIN")
+                    bases.forEachIndexed { index, (r, label) ->
+                        SegmentedButton(
+                            selected = programmerRadix == r,
+                            onClick = { 
+                                programmerRadix = r
+                                calculateResult()
+                            },
+                            shape = SegmentedButtonDefaults.itemShape(index = index, count = 4),
+                            icon = {},
+                            colors = if (isRetroMode) SegmentedButtonDefaults.colors(
+                                activeContainerColor = Color(0xFF222222),
+                                activeContentColor = Color(0xFF33FF33),
+                                inactiveContainerColor = Color.Black,
+                                inactiveContentColor = Color.Gray,
+                                activeBorderColor = Color(0xFF33FF33),
+                                inactiveBorderColor = Color.DarkGray
+                            ) else SegmentedButtonDefaults.colors()
+                        ) {
+                            Text(label, fontSize = 9.sp)
+                        }
+                    }
                 }
             }
         }
@@ -396,7 +436,7 @@ fun CalculatorButton(symbol: String, modifier: Modifier, isRetroMode: Boolean, o
 // --- PURE KOTLIN EXPRESSION PARSER / EVALUATOR ---
 
 object MathEvaluator {
-    fun evaluate(expression: String, isDeg: Boolean = true, isHex: Boolean = false): Double {
+    fun evaluate(expression: String, isDeg: Boolean = true, radix: Int = 10): Double {
         var expr = expression
             .replace("π", PI.toString())
             .replace("e", E.toString())
@@ -440,10 +480,14 @@ object MathEvaluator {
                 if (eat('('.code)) {
                     x = parseExpression()
                     eat(')'.code)
-                } else if ((ch in '0'.code..'9'.code) || ch == '.'.code || (isHex && ch in 'A'.code..'F'.code)) {
-                    while ((ch in '0'.code..'9'.code) || ch == '.'.code || (isHex && ch in 'A'.code..'F'.code)) nextChar()
+                } else if ((ch in '0'.code..'9'.code) || ch == '.'.code || (radix > 10 && ch in 'A'.code..'F'.code)) {
+                    while ((ch in '0'.code..'9'.code) || ch == '.'.code || (radix > 10 && ch in 'A'.code..'F'.code)) nextChar()
                     val s = expr.substring(startPos, pos)
-                    x = if (isHex) s.toLong(16).toDouble() else s.toDouble()
+                    x = try {
+                        if (radix != 10) s.toLong(radix).toDouble() else s.toDouble()
+                    } catch (e: Exception) {
+                        0.0
+                    }
                 } else if (ch in 'a'.code..'z'.code) {
                     while (ch in 'a'.code..'z'.code) nextChar()
                     val name = expr.substring(startPos, pos)
@@ -463,7 +507,7 @@ object MathEvaluator {
                     throw RuntimeException("Unexpected character: ${ch.toChar()}")
                 }
 
-                if (!isHex && eat('^'.code)) x = x.pow(parseFactor())
+                if (radix == 10 && eat('^'.code)) x = x.pow(parseFactor())
 
                 return x
             }
@@ -493,7 +537,7 @@ object MathEvaluator {
                     if (eatString("<<")) x = (x.toLong() shl parseExpression().toInt()).toDouble()
                     else if (eatString(">>")) x = (x.toLong() shr parseExpression().toInt()).toDouble()
                     else if (eat('&'.code)) x = (x.toLong() and parseExpression().toLong()).toDouble()
-                    else if (eat('^'.code) && isHex) x = (x.toLong() xor parseExpression().toLong()).toDouble()
+                    else if (eat('^'.code)) x = (x.toLong() xor parseExpression().toLong()).toDouble()
                     else if (eat('|'.code)) x = (x.toLong() or parseExpression().toLong()).toDouble()
                     else return x
                 }
@@ -501,7 +545,7 @@ object MathEvaluator {
         }
 
         nextChar()
-        val result = if (isHex) parser.parseBitwise() else parser.parseExpression()
+        val result = if (radix != 10) parser.parseBitwise() else parser.parseExpression()
         if (pos < expr.length) throw RuntimeException("Unexpected: " + expr[pos])
         return result
     }
