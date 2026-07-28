@@ -1,5 +1,8 @@
-- [x] Rename "Clear" button to "AC" in all keypads
-- [x] Update `CalculatorButton` color logic for "AC"
-- [x] Add "=" button to `ProgrammerKeypad`
-- [x] Update click handlers for "AC"
-- [x] Verify functionality across all modes
+- [x] Remove `android:roundIcon` from `AndroidManifest.xml`
+- [x] Delete `ic_launcher_round.xml` from `mipmap-anydpi-v26`
+- [x] Delete `ic_launcher_round.webp` from `mipmap-hdpi`
+- [x] Delete `ic_launcher_round.webp` from `mipmap-mdpi`
+- [x] Delete `ic_launcher_round.webp` from `mipmap-xhdpi`
+- [x] Delete `ic_launcher_round.webp` from `mipmap-xxhdpi`
+- [x] Delete `ic_launcher_round.webp` from `mipmap-xxxhdpi`
+- [x] Verify build

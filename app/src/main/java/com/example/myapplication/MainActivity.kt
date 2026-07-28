@@ -92,7 +92,7 @@ fun AdvancedCalculatorScreen() {
         // Top Header Caption
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
             Text(
-                text = "Calculator Extreme by Ventsislav Negentsov",
+                text = "Calculator Extreme v1.1 by Ventsislav Negentsov",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
@@ -200,13 +200,13 @@ fun ScientificKeypad(
         listOf("7", "8", "9", "e", "*"),
         listOf("4", "5", "6", "%", "-"),
         listOf("1", "2", "3", ".", "+"),
-        listOf("0", "00", "=", "=", "=")
+        listOf("0", "00", "000", "=", "=")
     )
 
     rows.forEach { row ->
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.fillMaxWidth()) {
             row.forEach { btn ->
-                val weight = if (btn == "=") 3f else 1f
+                val weight = if (btn == "=") 2f else 1f
                 CalculatorButton(
                     symbol = if (btn == "DEG/RAD") (if (isDeg) "DEG" else "RAD") else btn,
                     modifier = Modifier.weight(weight).height(48.dp),
@@ -220,6 +220,7 @@ fun ScientificKeypad(
                         }
                     }
                 )
+                if (btn == "=") return@Row
             }
         }
     }
@@ -231,16 +232,17 @@ fun BasicKeypad(onAppend: (String) -> Unit, onDelete: () -> Unit, onClear: () ->
         listOf("AC", "(", ")", "/", "DEL"),
         listOf("7", "8", "9", "*", "^"),
         listOf("4", "5", "6", "-", "%"),
-        listOf("1", "2", "3", "+", "="),
-        listOf("0", ".", "=", "=", "=")
+        listOf("1", "2", "3", "+", "."),
+        listOf("0", "00", "000", "=", "=")
     )
 
     rows.forEach { row ->
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.fillMaxWidth()) {
             row.forEach { btn ->
+                val weight = if (btn == "=") 2f else 1f
                 CalculatorButton(
                     symbol = btn,
-                    modifier = Modifier.weight(1f).height(54.dp),
+                    modifier = Modifier.weight(weight).height(54.dp),
                     onClick = {
                         when (btn) {
                             "AC" -> onClear()
@@ -249,6 +251,7 @@ fun BasicKeypad(onAppend: (String) -> Unit, onDelete: () -> Unit, onClear: () ->
                         }
                     }
                 )
+                if (btn == "=") return@Row
             }
         }
     }

@@ -1,29 +1,28 @@
-# Walkthrough - Programmer Keypad and Button Conflict Fixes
+# Walkthrough - Launcher Icon Cleanup
 
-I have fixed the issues in the Programmer keypad and resolved the naming conflict between the Hexadecimal "C" and the "Clear" button.
+I have cleaned up the project's launcher icons to strictly use the `ic_launcher` set, as requested.
 
 ## Changes Made
 
-### UI Infrastructure
+### Android Manifest
 
-#### [MainActivity.kt](file:///C:/Users/vents/AndroidStudioProjects/Calculator_Extreme/app/src/main/java/com/example/myapplication/MainActivity.kt)
-- **Renamed Clear Button to "AC"**: To avoid confusion with the Hexadecimal digit "C", all "Clear" buttons in the Basic, Scientific, and Programmer keypads now use the label "AC" (All Clear).
-- **Fixed Programmer Keypad Layout**:
-    - Replaced the duplicate "C" in the first row with the new "AC" button.
-    - The Hexadecimal digit "C" now uses the standard button color (secondaryContainer) instead of the "special" color.
-    - Added a new row at the bottom with a full-width **"="** button for calculations.
-- **Updated Styling Logic**: Updated `CalculatorButton` to correctly identify "AC" and "DEL" as special actions, ensuring they maintain their distinct error/warning color.
+#### [AndroidManifest.xml](file:///C:/Users/vents/AndroidStudioProjects/Calculator_Extreme/app/src/main/AndroidManifest.xml)
+- **Removed `roundIcon`**: Removed the `android:roundIcon` attribute. The system will now use the standard `ic_launcher` for all icon shapes.
+
+### Resource Cleanup
+
+- **Deleted `ic_launcher_round` variants**: Removed all XML and WebP files related to the round icon variant from the `mipmap` directories.
+    - `mipmap-anydpi-v26/ic_launcher_round.xml` [DELETE]
+    - `mipmap-hdpi/ic_launcher_round.webp` [DELETE]
+    - `mipmap-mdpi/ic_launcher_round.webp` [DELETE]
+    - `mipmap-xhdpi/ic_launcher_round.webp` [DELETE]
+    - `mipmap-xxhdpi/ic_launcher_round.webp` [DELETE]
+    - `mipmap-xxxhdpi/ic_launcher_round.webp` [DELETE]
 
 ## Verification Results
 
 ### Automated Tests
-- Ran `:app:assembleDebug` - **Passed**.
+- Ran `:app:assembleDebug` - **Passed**. The project builds correctly without the round icon references.
 
 ### Manual Verification Recommended
-- **Programmer Mode**:
-    - Check that the first row is `A B C AC DEL`.
-    - Check that the 'C' button has a light purple background (same as A and B).
-    - Check that the 'AC' button has a pink/red background.
-    - Check that there is a large `=` button at the very bottom.
-- **Basic/Scientific Modes**:
-    - Verify the clear button now says "AC" and functions correctly.
+- Check the `mipmap` folder in Android Studio; it should now only show `ic_launcher`.
