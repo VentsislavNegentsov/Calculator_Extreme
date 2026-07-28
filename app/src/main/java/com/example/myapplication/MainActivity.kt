@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,12 +25,13 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            var isRetroMode by remember { mutableStateOf(false) }
             MaterialTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    color = if (isRetroMode) Color.Black else MaterialTheme.colorScheme.background
                 ) {
-                    AdvancedCalculatorScreen()
+                    AdvancedCalculatorScreen(isRetroMode, onToggleRetro = { isRetroMode = it })
                 }
             }
         }
@@ -39,7 +41,7 @@ class MainActivity : ComponentActivity() {
 enum class CalcMode { BASIC, SCIENTIFIC, PROGRAMMER }
 
 @Composable
-fun AdvancedCalculatorScreen() {
+fun AdvancedCalculatorScreen(isRetroMode: Boolean, onToggleRetro: (Boolean) -> Unit) {
     var expression by remember { mutableStateOf("") }
     var resultText by remember { mutableStateOf("0") }
     var currentMode by remember { mutableStateOf(CalcMode.SCIENTIFIC) }
@@ -51,10 +53,15 @@ fun AdvancedCalculatorScreen() {
             resultText = "0"
             return
         }
+        val cleanExpr = expression.removeSuffix("=")
+        if (cleanExpr.isBlank()) {
+            resultText = "0"
+            return
+        }
         try {
-            val evalResult = MathEvaluator.evaluate(expression, isDeg)
+            val evalResult = MathEvaluator.evaluate(cleanExpr, isDeg, currentMode == CalcMode.PROGRAMMER)
             resultText = if (evalResult % 1.0 == 0.0 && !evalResult.isInfinite()) {
-                evalResult.toLong().toString()
+                evalResult.toLong().toString(if (currentMode == CalcMode.PROGRAMMER) 16 else 10).uppercase()
             } else {
                 evalResult.toString()
             }
@@ -92,24 +99,53 @@ fun AdvancedCalculatorScreen() {
         // Top Header Caption
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
             Text(
-                text = "Calculator Extreme v1.1 by Ventsislav Negentsov",
+                text = "Calculator Extreme v1.2 by Ventsislav Negentsov",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
+                color = if (isRetroMode) Color(0xFF33FF33) else MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
-            // Mode Selector Tabs
-            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+            // Mode & Theme Selector Tabs
+            MultiChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                val totalButtons = CalcMode.values().size + 1
+                
+                // Mode Buttons
                 CalcMode.values().forEachIndexed { index, mode ->
                     SegmentedButton(
-                        selected = currentMode == mode,
-                        onClick = { currentMode = mode },
-                        shape = SegmentedButtonDefaults.itemShape(index = index, count = 3),
-                        icon = {}
+                        checked = currentMode == mode,
+                        onCheckedChange = { currentMode = mode },
+                        shape = SegmentedButtonDefaults.itemShape(index = index, count = totalButtons),
+                        icon = {},
+                        colors = if (isRetroMode) SegmentedButtonDefaults.colors(
+                            activeContainerColor = Color(0xFF222222),
+                            activeContentColor = Color(0xFF33FF33),
+                            inactiveContainerColor = Color.Black,
+                            inactiveContentColor = Color.Gray,
+                            activeBorderColor = Color(0xFF33FF33),
+                            inactiveBorderColor = Color.DarkGray
+                        ) else SegmentedButtonDefaults.colors()
                     ) {
-                        Text(mode.name, fontSize = 12.sp)
+                        Text(mode.name, fontSize = 10.sp)
                     }
+                }
+                
+                // Retro Toggle Button
+                SegmentedButton(
+                    checked = isRetroMode,
+                    onCheckedChange = { onToggleRetro(it) },
+                    shape = SegmentedButtonDefaults.itemShape(index = totalButtons - 1, count = totalButtons),
+                    icon = {},
+                    colors = if (isRetroMode) SegmentedButtonDefaults.colors(
+                        activeContainerColor = Color(0xFF222222),
+                        activeContentColor = Color(0xFF33FF33),
+                        inactiveContainerColor = Color.Black,
+                        inactiveContentColor = Color.Gray,
+                        activeBorderColor = Color(0xFF33FF33),
+                        inactiveBorderColor = Color.DarkGray
+                    ) else SegmentedButtonDefaults.colors()
+                ) {
+                    Text("RETRO", fontSize = 10.sp)
                 }
             }
         }
@@ -117,7 +153,10 @@ fun AdvancedCalculatorScreen() {
         // Display Screen Area
         Card(
             modifier = Modifier.fillMaxWidth().weight(1f).padding(vertical = 12.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            colors = CardDefaults.cardColors(
+                containerColor = if (isRetroMode) Color(0xFF1A1A1A) else MaterialTheme.colorScheme.surfaceVariant
+            ),
+            border = if (isRetroMode) BorderStroke(2.dp, Color(0xFF33FF33)) else null
         ) {
             Column(
                 modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -127,9 +166,10 @@ fun AdvancedCalculatorScreen() {
                 Text(
                     text = expression.ifEmpty { "0" },
                     fontSize = 24.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    color = if (isRetroMode) Color(0xFF33FF33).copy(alpha = 0.5f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                     modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.End
+                    textAlign = TextAlign.End,
+                    fontFamily = if (isRetroMode) FontFamily.Monospace else FontFamily.Default
                 )
 
                 // Result Text
@@ -137,22 +177,26 @@ fun AdvancedCalculatorScreen() {
                     text = "= $resultText",
                     fontSize = 40.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = if (isRetroMode) Color(0xFF33FF33) else MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.End
+                    textAlign = TextAlign.End,
+                    fontFamily = if (isRetroMode) FontFamily.Monospace else FontFamily.Default
                 )
 
                 // Programmer Base Bar (Live DEC, HEX, BIN, OCT values)
                 if (currentMode == CalcMode.PROGRAMMER) {
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 4.dp),
+                        color = if (isRetroMode) Color(0xFF33FF33).copy(alpha = 0.3f) else DividerDefaults.color
+                    )
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        BaseInfo("HEX", numericValue?.toString(16)?.uppercase() ?: "-")
-                        BaseInfo("DEC", numericValue?.toString(10) ?: "-")
-                        BaseInfo("OCT", numericValue?.toString(8) ?: "-")
-                        BaseInfo("BIN", numericValue?.toString(2) ?: "-")
+                        BaseInfo("HEX", numericValue?.toString(16)?.uppercase() ?: "-", isRetroMode)
+                        BaseInfo("DEC", numericValue?.toString(10) ?: "-", isRetroMode)
+                        BaseInfo("OCT", numericValue?.toString(8) ?: "-", isRetroMode)
+                        BaseInfo("BIN", numericValue?.toString(2) ?: "-", isRetroMode)
                     }
                 }
             }
@@ -161,25 +205,36 @@ fun AdvancedCalculatorScreen() {
         // Keypads
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             when (currentMode) {
-                CalcMode.BASIC -> BasicKeypad(::appendInput, ::deleteLastChar, ::clearAll)
+                CalcMode.BASIC -> BasicKeypad(::appendInput, ::deleteLastChar, ::clearAll, isRetroMode)
                 CalcMode.SCIENTIFIC -> ScientificKeypad(
                     isDeg = isDeg,
                     onToggleDeg = { isDeg = !isDeg },
                     onAppend = ::appendInput,
                     onDelete = ::deleteLastChar,
-                    onClear = ::clearAll
+                    onClear = ::clearAll,
+                    isRetroMode = isRetroMode
                 )
-                CalcMode.PROGRAMMER -> ProgrammerKeypad(::appendInput, ::deleteLastChar, ::clearAll)
+                CalcMode.PROGRAMMER -> ProgrammerKeypad(::appendInput, ::deleteLastChar, ::clearAll, isRetroMode)
             }
         }
     }
 }
 
 @Composable
-fun BaseInfo(label: String, value: String) {
+fun BaseInfo(label: String, value: String, isRetroMode: Boolean) {
     Column {
-        Text(text = label, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-        Text(text = value, fontSize = 12.sp, fontFamily = FontFamily.Monospace)
+        Text(
+            text = label,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Bold,
+            color = if (isRetroMode) Color(0xFF33FF33) else MaterialTheme.colorScheme.primary
+        )
+        Text(
+            text = value,
+            fontSize = 12.sp,
+            fontFamily = FontFamily.Monospace,
+            color = if (isRetroMode) Color(0xFF33FF33) else MaterialTheme.colorScheme.onSurface
+        )
     }
 }
 
@@ -191,7 +246,8 @@ fun ScientificKeypad(
     onToggleDeg: () -> Unit,
     onAppend: (String) -> Unit,
     onDelete: () -> Unit,
-    onClear: () -> Unit
+    onClear: () -> Unit,
+    isRetroMode: Boolean
 ) {
     val rows = listOf(
         listOf("DEG/RAD", "sin", "cos", "tan", "AC"),
@@ -210,6 +266,7 @@ fun ScientificKeypad(
                 CalculatorButton(
                     symbol = if (btn == "DEG/RAD") (if (isDeg) "DEG" else "RAD") else btn,
                     modifier = Modifier.weight(weight).height(48.dp),
+                    isRetroMode = isRetroMode,
                     onClick = {
                         when (btn) {
                             "AC" -> onClear()
@@ -227,7 +284,7 @@ fun ScientificKeypad(
 }
 
 @Composable
-fun BasicKeypad(onAppend: (String) -> Unit, onDelete: () -> Unit, onClear: () -> Unit) {
+fun BasicKeypad(onAppend: (String) -> Unit, onDelete: () -> Unit, onClear: () -> Unit, isRetroMode: Boolean) {
     val rows = listOf(
         listOf("AC", "(", ")", "/", "DEL"),
         listOf("7", "8", "9", "*", "^"),
@@ -243,6 +300,7 @@ fun BasicKeypad(onAppend: (String) -> Unit, onDelete: () -> Unit, onClear: () ->
                 CalculatorButton(
                     symbol = btn,
                     modifier = Modifier.weight(weight).height(54.dp),
+                    isRetroMode = isRetroMode,
                     onClick = {
                         when (btn) {
                             "AC" -> onClear()
@@ -258,7 +316,7 @@ fun BasicKeypad(onAppend: (String) -> Unit, onDelete: () -> Unit, onClear: () ->
 }
 
 @Composable
-fun ProgrammerKeypad(onAppend: (String) -> Unit, onDelete: () -> Unit, onClear: () -> Unit) {
+fun ProgrammerKeypad(onAppend: (String) -> Unit, onDelete: () -> Unit, onClear: () -> Unit, isRetroMode: Boolean) {
     val rows = listOf(
         listOf("A", "B", "C", "AC", "DEL"),
         listOf("D", "E", "F", "/", "*"),
@@ -276,6 +334,7 @@ fun ProgrammerKeypad(onAppend: (String) -> Unit, onDelete: () -> Unit, onClear: 
                 CalculatorButton(
                     symbol = btn,
                     modifier = Modifier.weight(weight).height(48.dp),
+                    isRetroMode = isRetroMode,
                     onClick = {
                         when (btn) {
                             "AC" -> onClear()
@@ -296,7 +355,7 @@ fun ProgrammerKeypad(onAppend: (String) -> Unit, onDelete: () -> Unit, onClear: 
 }
 
 @Composable
-fun CalculatorButton(symbol: String, modifier: Modifier, onClick: () -> Unit) {
+fun CalculatorButton(symbol: String, modifier: Modifier, isRetroMode: Boolean, onClick: () -> Unit) {
     val isOperator = symbol in listOf("+", "-", "*", "/", "^", "%", "=", "&", "|", "~", "<<", ">>")
     val isSpecial = symbol in listOf("AC", "DEL")
 
@@ -307,25 +366,37 @@ fun CalculatorButton(symbol: String, modifier: Modifier, onClick: () -> Unit) {
         contentPadding = PaddingValues(0.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = when {
+                isRetroMode -> Color(0xFF222222)
                 isSpecial -> MaterialTheme.colorScheme.errorContainer
                 isOperator -> MaterialTheme.colorScheme.primary
                 else -> MaterialTheme.colorScheme.secondaryContainer
             },
             contentColor = when {
+                isRetroMode -> when {
+                    isSpecial -> Color(0xFFFF9900) // Fluorescent Orange
+                    isOperator -> Color(0xFFFFFF00) // Fluorescent Yellow
+                    else -> Color(0xFF33FF33) // Fluorescent Green
+                }
                 isSpecial -> MaterialTheme.colorScheme.onErrorContainer
                 isOperator -> MaterialTheme.colorScheme.onPrimary
                 else -> MaterialTheme.colorScheme.onSecondaryContainer
             }
-        )
+        ),
+        border = if (isRetroMode) BorderStroke(1.dp, Color(0xFF33FF33).copy(alpha = 0.2f)) else null
     ) {
-        Text(text = symbol, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        Text(
+            text = symbol,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold,
+            fontFamily = if (isRetroMode) FontFamily.Monospace else FontFamily.Default
+        )
     }
 }
 
 // --- PURE KOTLIN EXPRESSION PARSER / EVALUATOR ---
 
 object MathEvaluator {
-    fun evaluate(expression: String, isDeg: Boolean = true): Double {
+    fun evaluate(expression: String, isDeg: Boolean = true, isHex: Boolean = false): Double {
         var expr = expression
             .replace("π", PI.toString())
             .replace("e", E.toString())
@@ -348,6 +419,16 @@ object MathEvaluator {
             return false
         }
 
+        fun eatString(s: String): Boolean {
+            while (ch == ' '.code) nextChar()
+            if (pos + s.length <= expr.length && expr.substring(pos, pos + s.length) == s) {
+                pos += s.length - 1
+                nextChar()
+                return true
+            }
+            return false
+        }
+
         val parser = object {
             fun parseFactor(): Double {
                 if (eat('+'.code)) return parseFactor()
@@ -359,38 +440,30 @@ object MathEvaluator {
                 if (eat('('.code)) {
                     x = parseExpression()
                     eat(')'.code)
-                } else if ((ch in '0'.code..'9'.code) || ch == '.'.code) {
-                    while ((ch in '0'.code..'9'.code) || ch == '.'.code) nextChar()
-                    x = expr.substring(startPos, pos).toDouble()
-                } else if (ch in 'a'.code..'z'.code || ch in 'A'.code..'Z'.code) {
-                    while (ch in 'a'.code..'z'.code || ch in 'A'.code..'Z'.code) nextChar()
+                } else if ((ch in '0'.code..'9'.code) || ch == '.'.code || (isHex && ch in 'A'.code..'F'.code)) {
+                    while ((ch in '0'.code..'9'.code) || ch == '.'.code || (isHex && ch in 'A'.code..'F'.code)) nextChar()
+                    val s = expr.substring(startPos, pos)
+                    x = if (isHex) s.toLong(16).toDouble() else s.toDouble()
+                } else if (ch in 'a'.code..'z'.code) {
+                    while (ch in 'a'.code..'z'.code) nextChar()
                     val name = expr.substring(startPos, pos)
-
-                    // Check for Hexadecimal numbers (A-F) vs functions
-                    if (name.length == 1 && name[0] in 'A'..'F') {
-                        x = name.toInt(16).toDouble()
-                    } else {
-                        x = parseFactor()
-                        val rad = if (isDeg) Math.toRadians(x) else x
-                        x = when (name) {
-                            "sqrt" -> sqrt(x)
-                            "sin" -> sin(rad)
-                            "cos" -> cos(rad)
-                            "tan" -> tan(rad)
-                            "atan" -> {
-                                val res = atan(x)
-                                if (isDeg) Math.toDegrees(res) else res
-                            }
-                            "log" -> log10(x)
-                            "ln" -> ln(x)
-                            else -> throw RuntimeException("Unknown function: $name")
-                        }
+                    x = parseFactor()
+                    val rad = if (isDeg) Math.toRadians(x) else x
+                    x = when (name) {
+                        "sqrt" -> sqrt(x)
+                        "sin" -> sin(rad)
+                        "cos" -> cos(rad)
+                        "tan" -> tan(rad)
+                        "atan" -> if (isDeg) Math.toDegrees(atan(x)) else atan(x)
+                        "log" -> log10(x)
+                        "ln" -> ln(x)
+                        else -> throw RuntimeException("Unknown function: $name")
                     }
                 } else {
-                    throw RuntimeException("Unexpected character")
+                    throw RuntimeException("Unexpected character: ${ch.toChar()}")
                 }
 
-                if (eat('^'.code)) x = x.pow(parseFactor())
+                if (!isHex && eat('^'.code)) x = x.pow(parseFactor())
 
                 return x
             }
@@ -401,8 +474,6 @@ object MathEvaluator {
                     if (eat('*'.code)) x *= parseFactor()
                     else if (eat('/'.code)) x /= parseFactor()
                     else if (eat('%'.code)) x %= parseFactor()
-                    else if (eat('&'.code)) x = (x.toLong() and parseFactor().toLong()).toDouble()
-                    else if (eat('|'.code)) x = (x.toLong() or parseFactor().toLong()).toDouble()
                     else return x
                 }
             }
@@ -415,10 +486,23 @@ object MathEvaluator {
                     else return x
                 }
             }
+
+            fun parseBitwise(): Double {
+                var x = parseExpression()
+                while (true) {
+                    if (eatString("<<")) x = (x.toLong() shl parseExpression().toInt()).toDouble()
+                    else if (eatString(">>")) x = (x.toLong() shr parseExpression().toInt()).toDouble()
+                    else if (eat('&'.code)) x = (x.toLong() and parseExpression().toLong()).toDouble()
+                    else if (eat('^'.code) && isHex) x = (x.toLong() xor parseExpression().toLong()).toDouble()
+                    else if (eat('|'.code)) x = (x.toLong() or parseExpression().toLong()).toDouble()
+                    else return x
+                }
+            }
         }
 
         nextChar()
-        val result = parser.parseExpression()
+        val result = if (isHex) parser.parseBitwise() else parser.parseExpression()
+        if (pos < expr.length) throw RuntimeException("Unexpected: " + expr[pos])
         return result
     }
 }

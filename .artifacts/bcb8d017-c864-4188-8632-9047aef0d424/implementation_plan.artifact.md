@@ -1,33 +1,38 @@
-# Implementation Plan - Launcher Icon Cleanup
+# Implementation Plan - Fix Hexadecimal Parsing and Bitwise Operators
 
-The user wants the project to use ONLY the icons from the `ic_launcher` set shown in the screenshot. This means removing the "round icon" variant and ensuring the manifest only points to `@mipmap/ic_launcher`.
+The user reported a bug where hexadecimal expressions like `EB-EA` result in an error. This is caused by the current `MathEvaluator` only supporting single-character hex digits and missing support for multi-character hex numbers. Additionally, several bitwise operators used in Programmer mode (`XOR`, `<<`, `>>`) are either incorrectly implemented or missing entirely.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> I will be removing the `android:roundIcon` attribute from the `AndroidManifest.xml` and deleting all `ic_launcher_round` files from the project. This will ensure that only the main `ic_launcher` set is used.
+> I will be updating the `MathEvaluator` to assume **Base 16 (Hexadecimal)** for ALL numbers entered while in **Programmer Mode**.
+> - `10` will be interpreted as `16` (Hex 10).
+> - `EB` will be interpreted as `235`.
 >
-> I will keep the `ic_launcher_foreground` and `ic_launcher_background` files for now, as they are required by the `ic_launcher.xml` adaptive icon definition. If you want the icon to be strictly non-adaptive (legacy only), please let me know.
+> This is a behavior change for decimal numbers in Programmer mode, but it is necessary to support hexadecimal input consistently without requiring prefixes like `0x`.
 
 ## Proposed Changes
 
-### Android Manifest
+### 1. [MathEvaluator](file:///C:/Users/vents/AndroidStudioProjects/Calculator_Extreme/app/src/main/java/com/example/myapplication/MainActivity.kt)
 
-#### [MODIFY] [AndroidManifest.xml](file:///C:/Users/vents/AndroidStudioProjects/Calculator_Extreme/app/src/main/AndroidManifest.xml)
-- Remove `android:roundIcon="@mipmap/ic_launcher_round"`.
+- **Update `evaluate` signature**: Add `isHex: Boolean = false` parameter.
+- **Support Multi-character Hex**: Update the number parsing logic to include `A-F` when `isHex` is true.
+- **Support Bitwise Operators**:
+    - Add `eatString(s: String)` to handle `<<` and `>>`.
+    - Implement correct bitwise precedence levels: `Shift` (`<<`, `>>`), `AND` (`&`), `XOR` (`^`), and `OR` (`|`).
+- **Fix XOR vs Power**: Ensure `^` is bitwise XOR in Programmer mode and `pow()` in other modes.
 
-### Resources
+### 2. [AdvancedCalculatorScreen](file:///C:/Users/vents/AndroidStudioProjects/Calculator_Extreme/app/src/main/java/com/example/myapplication/MainActivity.kt)
 
-#### [DELETE] `ic_launcher_round` files
-- Delete `app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml`
-- Delete `app/src/main/res/mipmap-hdpi/ic_launcher_round.webp`
-- Delete `app/src/main/res/mipmap-mdpi/ic_launcher_round.webp`
-- Delete `app/src/main/res/mipmap-xhdpi/ic_launcher_round.webp`
-- Delete `app/src/main/res/mipmap-xxhdpi/ic_launcher_round.webp`
-- Delete `app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.webp`
+- **Update `calculateResult`**: Pass `currentMode == CalcMode.PROGRAMMER` as the `isHex` argument to `MathEvaluator.evaluate`.
 
 ## Verification Plan
 
+### Automated Tests
+- Run `:app:assembleDebug` to ensure compilation success.
+
 ### Manual Verification
-- Deploy the app to a device and verify the launcher icon appears correctly.
-- Check the "Android" project view in Android Studio to confirm only `ic_launcher (6)` appears under `mipmap`.
+- **Hex Arithmetic**: `EB - EA` should equal `1`.
+- **Bitwise Shifts**: `1 << 4` should equal `10` (Hex).
+- **Bitwise Logic**: `F & 7` should equal `7`, `1 ^ 1` should equal `0`.
+- **Regression**: `2 ^ 3` in Scientific mode should still equal `8`.

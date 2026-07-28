@@ -1,8 +1,4 @@
-- [x] Remove `android:roundIcon` from `AndroidManifest.xml`
-- [x] Delete `ic_launcher_round.xml` from `mipmap-anydpi-v26`
-- [x] Delete `ic_launcher_round.webp` from `mipmap-hdpi`
-- [x] Delete `ic_launcher_round.webp` from `mipmap-mdpi`
-- [x] Delete `ic_launcher_round.webp` from `mipmap-xhdpi`
-- [x] Delete `ic_launcher_round.webp` from `mipmap-xxhdpi`
-- [x] Delete `ic_launcher_round.webp` from `mipmap-xxxhdpi`
-- [x] Verify build
+- [x] Update `MathEvaluator` to support multi-character Hex and bitwise operators
+- [x] Pass `isHex` flag from `AdvancedCalculatorScreen` to `evaluate`
+- [x] Verify `EB - EA = 1` in Programmer Mode
+- [x] Verify `2 ^ 3 = 8` in Scientific Mode
