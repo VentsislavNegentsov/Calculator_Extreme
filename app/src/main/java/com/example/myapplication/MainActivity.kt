@@ -63,7 +63,7 @@ fun AdvancedCalculatorScreen(themeIndex: Int, onThemeChange: (Int) -> Unit) {
     val themeColor = activeRetroTheme?.primary ?: MaterialTheme.colorScheme.primary
     var expression by remember { mutableStateOf("") }
     var resultText by remember { mutableStateOf("0") }
-    var currentMode by remember { mutableStateOf(CalcMode.SCIENTIFIC) }
+    var currentMode by remember { mutableStateOf(CalcMode.BASIC) }
     var isDeg by remember { mutableStateOf(true) }
     var programmerRadix by remember { mutableStateOf(16) }
 
@@ -136,14 +136,14 @@ fun AdvancedCalculatorScreen(themeIndex: Int, onThemeChange: (Int) -> Unit) {
                     width = 1.dp,
                     color = if (isRetroMode) themeColor.copy(alpha = 0.5f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
                 ),
-                modifier = Modifier.padding(bottom = 12.dp)
+                modifier = Modifier.padding(bottom = 8.dp)
             ) {
                 Text(
                     text = "Calculator Extreme v1.3 by Ventsislav Negentsov",
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
                     color = if (isRetroMode) themeColor else MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 2.dp)
                 )
             }
 
@@ -325,9 +325,9 @@ fun ScientificKeypad(
 ) {
     val rows = listOf(
         listOf("sin", "cos", "tan", "AC", "DEL"),
-        listOf("sqrt", "log", "ln", "(", ")"),
-        listOf("atan", "π", "e", "^", "/"),
-        listOf("7", "8", "9", "%", "*"),
+        listOf("sqrt", "log", "ln", "^", "/"),
+        listOf("atan", "π", "e", "%", "*"),
+        listOf("7", "8", "9", "(", ")"),
         listOf("4", "5", "6", "DEG/RAD", "-"),
         listOf("1", "2", "3", ".", "+"),
         listOf("0", "00", "000", "=", "=")
@@ -363,8 +363,8 @@ fun BasicKeypad(onAppend: (String) -> Unit, onDelete: () -> Unit, onClear: () ->
         listOf("7", "8", "9", "AC", "DEL"),
         listOf("4", "5", "6", "^", "/"),
         listOf("1", "2", "3", "%", "*"),
-        listOf("0", ".", "(", ")", "-"),
-        listOf("00", "000", "+", "=", "=")
+        listOf(".", "(", ")", "+", "-"),
+        listOf("0", "00", "000", "=", "=")
     )
 
     rows.forEach { row ->
@@ -393,11 +393,11 @@ fun BasicKeypad(onAppend: (String) -> Unit, onDelete: () -> Unit, onClear: () ->
 fun ProgrammerKeypad(onAppend: (String) -> Unit, onDelete: () -> Unit, onClear: () -> Unit, themeIndex: Int) {
     val rows = listOf(
         listOf("A", "B", "C", "AC", "DEL"),
-        listOf("D", "E", "F", "(", "/"),
-        listOf("7", "8", "9", ")", "*"),
+        listOf("D", "E", "F", "<<", "/"),
+        listOf("7", "8", "9", ">>", "*"),
         listOf("4", "5", "6", "AND", "-"),
         listOf("1", "2", "3", "OR", "+"),
-        listOf("0", "<<", ">>", "XOR", "NOT"),
+        listOf("0", "(", ")", "XOR", "NOT"),
         listOf("=", "=", "=", "=", "=")
     )
 
@@ -433,7 +433,8 @@ fun CalculatorButton(symbol: String, modifier: Modifier, themeIndex: Int, onClic
     val isRetroMode = themeIndex > 0
     val activeRetroTheme = if (isRetroMode) RetroThemes[themeIndex - 1] else null
 
-    val isOperator = symbol in listOf("+", "-", "*", "/", "^", "%", "=", "&", "|", "~", "<<", ">>")
+    val operators = listOf("+", "-", "*", "/", "^", "%", "=", "&", "|", "~", "<<", ">>", "AND", "OR", "XOR", "NOT")
+    val isOperator = symbol in operators
     val isSpecial = symbol in listOf("AC", "DEL")
 
     Button(
@@ -463,7 +464,7 @@ fun CalculatorButton(symbol: String, modifier: Modifier, themeIndex: Int, onClic
     ) {
         Text(
             text = symbol,
-            fontSize = 16.sp,
+            fontSize = if (isOperator) 22.sp else 16.sp,
             fontWeight = FontWeight.Bold,
             fontFamily = if (isRetroMode) FontFamily.Monospace else FontFamily.Default
         )
