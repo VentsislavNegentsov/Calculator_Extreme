@@ -327,9 +327,9 @@ fun ScientificKeypad(
         listOf("sin", "cos", "tan", "AC", "DEL"),
         listOf("sqrt", "log", "ln", "(", ")"),
         listOf("atan", "π", "e", "DEG/RAD", "."),
-        listOf("7", "8", "9", "^", "/"),
-        listOf("4", "5", "6", "%", "*"),
-        listOf("1", "2", "3", "+", "-"),
+        listOf("7", "8", "9", "*", "/"),
+        listOf("4", "5", "6", "+", "-"),
+        listOf("1", "2", "3", "^", "%"),
         listOf("0", "00", "000", "=", "=")
     )
 
@@ -361,9 +361,9 @@ fun ScientificKeypad(
 fun BasicKeypad(onAppend: (String) -> Unit, onDelete: () -> Unit, onClear: () -> Unit, themeIndex: Int) {
     val rows = listOf(
         listOf("7", "8", "9", "AC", "DEL"),
-        listOf("4", "5", "6", "^", "/"),
-        listOf("1", "2", "3", "%", "*"),
-        listOf(".", "(", ")", "+", "-"),
+        listOf("4", "5", "6", "*", "/"),
+        listOf("1", "2", "3", "+", "-"),
+        listOf(".", "(", ")", "^", "%"),
         listOf("0", "00", "000", "=", "=")
     )
 
@@ -393,10 +393,10 @@ fun BasicKeypad(onAppend: (String) -> Unit, onDelete: () -> Unit, onClear: () ->
 fun ProgrammerKeypad(onAppend: (String) -> Unit, onDelete: () -> Unit, onClear: () -> Unit, themeIndex: Int) {
     val rows = listOf(
         listOf("A", "B", "C", "AC", "DEL"),
-        listOf("D", "E", "F", "<<", "/"),
-        listOf("7", "8", "9", ">>", "*"),
-        listOf("4", "5", "6", "AND", "-"),
-        listOf("1", "2", "3", "OR", "+"),
+        listOf("D", "E", "F", "*", "/"),
+        listOf("7", "8", "9", "+", "-"),
+        listOf("4", "5", "6", "<<", ">>"),
+        listOf("1", "2", "3", "AND", "OR"),
         listOf("0", "(", ")", "XOR", "NOT"),
         listOf("=", "=", "=", "=", "=")
     )
@@ -462,9 +462,13 @@ fun CalculatorButton(symbol: String, modifier: Modifier, themeIndex: Int, onClic
         ),
         border = if (isRetroMode) BorderStroke(1.dp, activeRetroTheme!!.primary.copy(alpha = 0.2f)) else null
     ) {
+        val fontSize = if (isOperator) {
+            if (symbol.length <= 2) 22.sp else 14.sp
+        } else 16.sp
+        
         Text(
             text = symbol,
-            fontSize = if (isOperator) 22.sp else 16.sp,
+            fontSize = fontSize,
             fontWeight = FontWeight.Bold,
             fontFamily = if (isRetroMode) FontFamily.Monospace else FontFamily.Default
         )
