@@ -325,11 +325,11 @@ fun ScientificKeypad(
 ) {
     val rows = listOf(
         listOf("sin", "cos", "tan", "AC", "DEL"),
-        listOf("sqrt", "log", "ln", "^", "/"),
-        listOf("atan", "π", "e", "%", "*"),
-        listOf("7", "8", "9", "(", ")"),
-        listOf("4", "5", "6", "DEG/RAD", "-"),
-        listOf("1", "2", "3", ".", "+"),
+        listOf("sqrt", "log", "ln", "(", ")"),
+        listOf("atan", "π", "e", "DEG/RAD", "."),
+        listOf("7", "8", "9", "^", "/"),
+        listOf("4", "5", "6", "%", "*"),
+        listOf("1", "2", "3", "+", "-"),
         listOf("0", "00", "000", "=", "=")
     )
 
