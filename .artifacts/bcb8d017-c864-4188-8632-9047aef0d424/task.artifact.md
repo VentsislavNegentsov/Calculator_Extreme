@@ -1,6 +1,4 @@
-- [x] Add `programmerRadix` state and update `calculateResult` logic
-- [x] Implement base selection buttons for Programmer mode
-- [x] Update `MathEvaluator` to support dynamic radix and all bitwise ops in Programmer mode
-- [x] Decrease font size for main mode buttons
-- [x] Verify fix for "Error" in Programmer mode
-- [x] Verify result formatting across HEX/DEC/OCT/BIN
+- [x] Update `MathEvaluator` to handle relative percentage logic (e.g., `100 + 5% = 105`)
+- [x] Ensure `100 * 5%` still works as `5` (postfix logic)
+- [x] Verify `100 - 5% = 95`
+- [x] Verify build and functionality

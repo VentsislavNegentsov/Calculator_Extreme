@@ -1,30 +1,27 @@
-# Implementation Plan - Fix Hexadecimal Parsing and Bitwise Operators
+# Implementation Plan - Fix Percent Buttons
 
-The user reported a bug where hexadecimal expressions like `EB-EA` result in an error. This is caused by the current `MathEvaluator` only supporting single-character hex digits and missing support for multi-character hex numbers. Additionally, several bitwise operators used in Programmer mode (`XOR`, `<<`, `>>`) are either incorrectly implemented or missing entirely.
+The user reported that the percent buttons (`%`) are not working. Currently, the `%` operator is implemented as a binary modulo operator in the math evaluator, which causes errors when used as a standard percentage (e.g., `5%`) and is also stripped by the real-time calculation logic.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> I will be updating the `MathEvaluator` to assume **Base 16 (Hexadecimal)** for ALL numbers entered while in **Programmer Mode**.
-> - `10` will be interpreted as `16` (Hex 10).
-> - `EB` will be interpreted as `235`.
+> I will redefine the `%` operator as a **postfix percentage operator** (dividing the preceding value by 100). This matches standard calculator behavior for Basic and Scientific modes.
 >
-> This is a behavior change for decimal numbers in Programmer mode, but it is necessary to support hexadecimal input consistently without requiring prefixes like `0x`.
+> I will also update the real-time evaluation logic so that it no longer strips the `%` sign, allowing users to see the result of percentage calculations immediately.
 
 ## Proposed Changes
 
-### 1. [MathEvaluator](file:///C:/Users/vents/AndroidStudioProjects/Calculator_Extreme/app/src/main/java/com/example/myapplication/MainActivity.kt)
+### Math Evaluator
 
-- **Update `evaluate` signature**: Add `isHex: Boolean = false` parameter.
-- **Support Multi-character Hex**: Update the number parsing logic to include `A-F` when `isHex` is true.
-- **Support Bitwise Operators**:
-    - Add `eatString(s: String)` to handle `<<` and `>>`.
-    - Implement correct bitwise precedence levels: `Shift` (`<<`, `>>`), `AND` (`&`), `XOR` (`^`), and `OR` (`|`).
-- **Fix XOR vs Power**: Ensure `^` is bitwise XOR in Programmer mode and `pow()` in other modes.
+#### [MODIFY] `MathEvaluator` in [MainActivity.kt](file:///C:/Users/vents/AndroidStudioProjects/Calculator_Extreme/app/src/main/java/com/example/myapplication/MainActivity.kt)
+- Remove the binary `%` (modulo) operator from `parseTerm`.
+- Add postfix `%` support in `parseFactor`. When a `%` is encountered after a number, factor, or parenthesized expression, it will be divided by 100.
+- Support multiple `%` signs (e.g., `5%%` = `0.0005`).
 
-### 2. [AdvancedCalculatorScreen](file:///C:/Users/vents/AndroidStudioProjects/Calculator_Extreme/app/src/main/java/com/example/myapplication/MainActivity.kt)
+### Real-time Calculation Logic
 
-- **Update `calculateResult`**: Pass `currentMode == CalcMode.PROGRAMMER` as the `isHex` argument to `MathEvaluator.evaluate`.
+#### [MODIFY] `calculateResult` in [MainActivity.kt](file:///C:/Users/vents/AndroidStudioProjects/Calculator_Extreme/app/src/main/java/com/example/myapplication/MainActivity.kt)
+- Remove `%` from the `operators` list that gets stripped from the end of the expression. This ensures that `5%` is evaluated as `0.05` instead of being stripped to `5`.
 
 ## Verification Plan
 
@@ -32,7 +29,8 @@ The user reported a bug where hexadecimal expressions like `EB-EA` result in an 
 - Run `:app:assembleDebug` to ensure compilation success.
 
 ### Manual Verification
-- **Hex Arithmetic**: `EB - EA` should equal `1`.
-- **Bitwise Shifts**: `1 << 4` should equal `10` (Hex).
-- **Bitwise Logic**: `F & 7` should equal `7`, `1 ^ 1` should equal `0`.
-- **Regression**: `2 ^ 3` in Scientific mode should still equal `8`.
+1.  **Basic Percentage**: Type `5%` and verify the result is `0.05`.
+2.  **Percentage in Expressions**: Type `10 + 5%` and verify the result is `10.05`.
+3.  **Multiple Percentages**: Type `100%%` and verify the result is `0.01`.
+4.  **Scientific Mode**: Verify that `%` works the same way in Scientific mode.
+5.  **Programmer Mode**: Ensure no regression (though `%` is not on the programmer keypad).

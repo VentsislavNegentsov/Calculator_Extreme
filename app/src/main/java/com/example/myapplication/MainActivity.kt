@@ -57,7 +57,7 @@ fun AdvancedCalculatorScreen(isRetroMode: Boolean, onToggleRetro: (Boolean) -> U
         var cleanExpr = expression.removeSuffix("=")
         
         // Remove trailing operators for real-time calculation
-        val operators = listOf("+", "-", "*", "/", "%", "&", "|", "^", "<<", ">>", "(", "~", "<", ">")
+        val operators = listOf("+", "-", "*", "/", "&", "|", "^", "<<", ">>", "(", "~", "<", ">")
         while (operators.any { cleanExpr.endsWith(it) } && cleanExpr.isNotEmpty()) {
             cleanExpr = cleanExpr.dropLast(1).trim()
         }
@@ -470,7 +470,7 @@ object MathEvaluator {
         }
 
         val parser = object {
-            fun parseFactor(): Double {
+            fun parseFactor(base: Double? = null): Double {
                 if (eat('+'.code)) return parseFactor()
                 if (eat('-'.code)) return -parseFactor()
                 if (eat('~'.code)) return parseFactor().toLong().inv().toDouble()
@@ -509,15 +509,23 @@ object MathEvaluator {
 
                 if (radix == 10 && eat('^'.code)) x = x.pow(parseFactor())
 
+                // Handle percentage (postfix %)
+                while (eat('%'.code)) {
+                    if (base != null) {
+                        x = base * (x / 100.0)
+                    } else {
+                        x /= 100.0
+                    }
+                }
+
                 return x
             }
 
-            fun parseTerm(): Double {
-                var x = parseFactor()
+            fun parseTerm(base: Double? = null): Double {
+                var x = parseFactor(base)
                 while (true) {
                     if (eat('*'.code)) x *= parseFactor()
                     else if (eat('/'.code)) x /= parseFactor()
-                    else if (eat('%'.code)) x %= parseFactor()
                     else return x
                 }
             }
@@ -525,8 +533,8 @@ object MathEvaluator {
             fun parseExpression(): Double {
                 var x = parseTerm()
                 while (true) {
-                    if (eat('+'.code)) x += parseTerm()
-                    else if (eat('-'.code)) x -= parseTerm()
+                    if (eat('+'.code)) x += parseTerm(base = x)
+                    else if (eat('-'.code)) x -= parseTerm(base = x)
                     else return x
                 }
             }
