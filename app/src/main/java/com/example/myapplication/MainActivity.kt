@@ -186,7 +186,7 @@ fun AdvancedCalculatorScreen(themeIndex: Int, onThemeChange: (Int) -> Unit) {
                         inactiveBorderColor = Color.DarkGray
                     ) else SegmentedButtonDefaults.colors()
                 ) {
-                    Text(if (isRetroMode) activeRetroTheme!!.name else "RETRO", fontSize = 9.sp)
+                    Text(if (isRetroMode) activeRetroTheme!!.name else "STYLE", fontSize = 9.sp)
                 }
             }
 
