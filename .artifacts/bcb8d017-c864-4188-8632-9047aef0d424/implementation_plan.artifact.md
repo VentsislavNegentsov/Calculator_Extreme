@@ -1,41 +1,38 @@
-# Implementation Plan - Multi-Theme Retro Mode
+# Implementation Plan - Rename Package to com.calculator_extreme
 
-I will expand the "Retro" button to cycle through 7 different themes (Normal + 6 fluorescent retro styles), allowing you to choose the best look for your calculator.
+The Google Play Store requires the package name (Application ID) of the uploaded bundle to match the one you registered in the Play Console. Currently, your project is using the default `com.example.myapplication`, but it must be `com.calculator_extreme`.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> - The **Retro** button will now cycle through 7 states: **Normal**, **Green**, **Amber**, **Milky Cyan**, **Plasma**, **Electric Blue**, and **Neon Pink**.
-> - Tapping the "Retro" button will advance to the next theme.
-> - All retro themes will use a deep black background with their respective glowing fluorescent color palettes.
+> This change will modify the identity of your app. Once published with `com.calculator_extreme`, you cannot change it without creating a new app listing in the Play Store.
 
 ## Proposed Changes
 
-### Theme Management
+### Build Configuration
+
+#### [MODIFY] [app/build.gradle.kts](file:///C:/Users/vents/AndroidStudioProjects/Calculator_Extreme/app/build.gradle.kts)
+- Change `namespace` to `"com.calculator_extreme"`.
+- Change `applicationId` to `"com.calculator_extreme"`.
+
+### Source Code
 
 #### [MODIFY] [MainActivity.kt](file:///C:/Users/vents/AndroidStudioProjects/Calculator_Extreme/app/src/main/java/com/example/myapplication/MainActivity.kt)
-- Define a `RetroTheme` data class to store primary, special, and operator colors.
-- Create a list of 6 retro themes plus the "Normal" state.
-- Change `isRetroMode: Boolean` to `themeIndex: Int` throughout the app.
+- Update the package declaration from `package com.example.myapplication` to `package com.calculator_extreme`.
 
-### UI Integration
+#### [MOVE] Directory Restructuring
+- I will move the source file from the `com/example/myapplication` directory to `com/calculator_extreme` to match the new package name.
 
-#### [MODIFY] Header & Mode Bar
-- Update the "RETRO" button to display its current state (e.g., "RETRO 1", "RETRO 2" or just highlight based on `themeIndex > 0`).
-- Implement the cycling logic: `onToggleRetro = { themeIndex = (themeIndex + 1) % 7 }`.
+### Android Manifest
 
-#### [MODIFY] Components
-- **Surface & Card**: Background and border colors will now be derived from the selected theme in the list.
-- **CalculatorButton**: Update the conditional styling to use the colors from the active `RetroTheme` index.
-- **BaseInfo**: Update text colors to match the active theme.
+#### [MODIFY] [AndroidManifest.xml](file:///C:/Users/vents/AndroidStudioProjects/Calculator_Extreme/app/src/main/AndroidManifest.xml)
+- Ensure the activity reference remains correct (it should stay `.MainActivity` as it's relative to the namespace).
 
 ## Verification Plan
 
 ### Automated Tests
-- Run `:app:assembleDebug` to ensure no syntax errors.
+- Run `:app:assembleDebug` to ensure the app builds successfully with the new package name.
+- Verify the generated APK/AAB has the correct `applicationId`.
 
 ### Manual Verification
-- Tap the **RETRO** button 7 times and verify:
-    1. It cycles back to the **Normal** theme.
-    2. Each of the 6 retro themes (Green, Amber, Cyan, etc.) has distinct, glowing fluorescent colors.
-    3. Calculations and base switching still work correctly in every theme.
+- After I finish, you will need to **re-generate your Signed Bundle (.aab)** and upload it to the Play Store.

@@ -1,4 +1,4 @@
-package com.example.myapplication
+package com.calculator_extreme
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

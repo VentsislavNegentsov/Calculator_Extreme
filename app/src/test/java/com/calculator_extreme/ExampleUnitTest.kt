@@ -1,4 +1,4 @@
-package com.example.myapplication
+package com.calculator_extreme
 
 import org.junit.Test
 

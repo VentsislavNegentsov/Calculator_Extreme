@@ -1,7 +1,5 @@
-- [x] Define `RetroTheme` and the 6 retro color palettes
-- [x] Transition state from `isRetroMode: Boolean` to `themeIndex: Int`
-- [x] Update header logic to cycle through 7 theme states
-- [x] Update display and base info with theme-aware colors
-- [x] Update `CalculatorButton` to use specific color sets from the active theme
-- [x] Pass `themeIndex` through all keypad layers
-- [x] Verify build and theme cycling functionality
+- [ ] Update `namespace` and `applicationId` in `app/build.gradle.kts`
+- [ ] Update package declaration in `MainActivity.kt`
+- [ ] Move source files to `com/calculator_extreme` directory
+- [ ] Update package declarations in `ui/theme` files
+- [ ] Verify build
