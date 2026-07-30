@@ -1,20 +1,29 @@
-# Walkthrough - Relative Percentage Logic Fix
+# Walkthrough - Multi-Theme Retro Mode v1.3
 
-I have updated the calculator's math engine to support the standard "consumer calculator" logic for percentages.
+I have expanded the Retro Mode to support **7 distinct themes** (Normal + 6 classic retro styles). You can now cycle through these themes by tapping the **RETRO** button in the header.
 
 ## Changes Made
 
-### Math Engine Refinement
+### Dynamic Theme Engine
 
 #### [MainActivity.kt](file:///C:/Users/vents/AndroidStudioProjects/Calculator_Extreme/app/src/main/java/com/example/myapplication/MainActivity.kt)
-- **Implemented Relative Percentages**: Updated `MathEvaluator` to pass the preceding total (the "base") to the terms following a `+` or `-` operator.
-- **Context-Aware Scaling**: In `parseFactor`, the percentage operator (`%`) now checks if it has a base value. If it does, it calculates the percentage **of that base** instead of just dividing by 100.
-- **Maintained Postfix Consistency**: Operations like `*` and `/` (multiplication and division) still treat `%` as a simple `x / 100` postfix operator, which is the expected behavior for those cases.
+- **Multi-State Toggle**: The **RETRO** button now acts as a cycle switch. Each tap advances the app through the following themes:
+    1. **NORMAL**: The standard modern Material 3 theme.
+    2. **GREEN**: Classic Phosphor/CRT green.
+    3. **AMBER**: Vintage industrial amber.
+    4. **CYAN**: Milky vacuum fluorescent display (VFD) cyan.
+    5. **PLASMA**: High-energy neon orange.
+    6. **BLUE**: High-contrast electric cobalt.
+    7. **PINK**: Cyberpunk neon pink.
+- **Theme Labeling**: The button text dynamically updates to show the name of the active retro theme (e.g., "GREEN", "AMBER") so you know which one is selected.
+- **Unified Color Mapping**: Every UI element—from the glowing screen border to the individual button text (digits, operators, special keys)—now automatically adapts to the chosen theme's specific color palette.
 
 ## Verification Results
 
+### Automated Tests
+- Ran `:app:assembleDebug` - **Passed**.
+
 ### Manual Verification Recommended
-- **Addition**: Type `100 + 5%`. The result should now be `= 105`.
-- **Subtraction**: Type `100 - 5%`. The result should now be `= 95`.
-- **Multiplication**: Type `100 * 5%`. The result should correctly be `= 5`.
-- **Chaining**: Type `100 + 50 + 10%`. The result should correctly be `150 + (10% of 150) = 165`.
+1. **Cycle Through Themes**: Tap the **RETRO** button multiple times to see all 6 fluorescent styles.
+2. **Visual Check**: Ensure that in each mode, the numbers are the primary theme color, special buttons (AC/DEL) are a high-contrast accent color, and operators have their own distinct fluorescent hue.
+3. **Reset to Normal**: Verify that the 7th tap returns the app to the standard "NORMAL" theme.

@@ -1,4 +1,7 @@
-- [x] Update `MathEvaluator` to handle relative percentage logic (e.g., `100 + 5% = 105`)
-- [x] Ensure `100 * 5%` still works as `5` (postfix logic)
-- [x] Verify `100 - 5% = 95`
-- [x] Verify build and functionality
+- [x] Define `RetroTheme` and the 6 retro color palettes
+- [x] Transition state from `isRetroMode: Boolean` to `themeIndex: Int`
+- [x] Update header logic to cycle through 7 theme states
+- [x] Update display and base info with theme-aware colors
+- [x] Update `CalculatorButton` to use specific color sets from the active theme
+- [x] Pass `themeIndex` through all keypad layers
+- [x] Verify build and theme cycling functionality

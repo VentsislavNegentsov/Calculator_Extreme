@@ -25,13 +25,13 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            var isRetroMode by remember { mutableStateOf(false) }
+            var themeIndex by remember { mutableStateOf(0) }
             MaterialTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = if (isRetroMode) Color.Black else MaterialTheme.colorScheme.background
+                    color = if (themeIndex > 0) Color.Black else MaterialTheme.colorScheme.background
                 ) {
-                    AdvancedCalculatorScreen(isRetroMode, onToggleRetro = { isRetroMode = it })
+                    AdvancedCalculatorScreen(themeIndex, onThemeChange = { themeIndex = it })
                 }
             }
         }
@@ -40,8 +40,27 @@ class MainActivity : ComponentActivity() {
 
 enum class CalcMode { BASIC, SCIENTIFIC, PROGRAMMER }
 
+data class RetroTheme(
+    val name: String,
+    val primary: Color,
+    val special: Color,
+    val operator: Color
+)
+
+val RetroThemes = listOf(
+    RetroTheme("GREEN", Color(0xFF33FF33), Color(0xFFFF9900), Color(0xFFFFFF00)),
+    RetroTheme("AMBER", Color(0xFFFFB000), Color(0xFFFF4400), Color(0xFFFFEE00)),
+    RetroTheme("CYAN", Color(0xFF00FFFF), Color(0xFFFF55BB), Color(0xFF55FF55)),
+    RetroTheme("PLASMA", Color(0xFFFF5500), Color(0xFF00FFCC), Color(0xFFFFFF33)),
+    RetroTheme("BLUE", Color(0xFF0088FF), Color(0xFFFF3333), Color(0xFFCCFF00)),
+    RetroTheme("PINK", Color(0xFFFF00FF), Color(0xFF00FFEE), Color(0xFFFFFF00))
+)
+
 @Composable
-fun AdvancedCalculatorScreen(isRetroMode: Boolean, onToggleRetro: (Boolean) -> Unit) {
+fun AdvancedCalculatorScreen(themeIndex: Int, onThemeChange: (Int) -> Unit) {
+    val isRetroMode = themeIndex > 0
+    val activeRetroTheme = if (isRetroMode) RetroThemes[themeIndex - 1] else null
+    val themeColor = activeRetroTheme?.primary ?: MaterialTheme.colorScheme.primary
     var expression by remember { mutableStateOf("") }
     var resultText by remember { mutableStateOf("0") }
     var currentMode by remember { mutableStateOf(CalcMode.SCIENTIFIC) }
@@ -111,10 +130,10 @@ fun AdvancedCalculatorScreen(isRetroMode: Boolean, onToggleRetro: (Boolean) -> U
         // Top Header Caption
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
             Text(
-                text = "Calculator Extreme v1.2 by Ventsislav Negentsov",
+                text = "Calculator Extreme v1.3 by Ventsislav Negentsov",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = if (isRetroMode) Color(0xFF33FF33) else MaterialTheme.colorScheme.primary,
+                color = if (isRetroMode) themeColor else MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
@@ -131,10 +150,10 @@ fun AdvancedCalculatorScreen(isRetroMode: Boolean, onToggleRetro: (Boolean) -> U
                         icon = {},
                         colors = if (isRetroMode) SegmentedButtonDefaults.colors(
                             activeContainerColor = Color(0xFF222222),
-                            activeContentColor = Color(0xFF33FF33),
+                            activeContentColor = themeColor,
                             inactiveContainerColor = Color.Black,
                             inactiveContentColor = Color.Gray,
-                            activeBorderColor = Color(0xFF33FF33),
+                            activeBorderColor = themeColor,
                             inactiveBorderColor = Color.DarkGray
                         ) else SegmentedButtonDefaults.colors()
                     ) {
@@ -145,19 +164,19 @@ fun AdvancedCalculatorScreen(isRetroMode: Boolean, onToggleRetro: (Boolean) -> U
                 // Retro Toggle Button
                 SegmentedButton(
                     checked = isRetroMode,
-                    onCheckedChange = { onToggleRetro(it) },
+                    onCheckedChange = { onThemeChange((themeIndex + 1) % 7) },
                     shape = SegmentedButtonDefaults.itemShape(index = totalButtons - 1, count = totalButtons),
                     icon = {},
                     colors = if (isRetroMode) SegmentedButtonDefaults.colors(
                         activeContainerColor = Color(0xFF222222),
-                        activeContentColor = Color(0xFF33FF33),
+                        activeContentColor = themeColor,
                         inactiveContainerColor = Color.Black,
                         inactiveContentColor = Color.Gray,
-                        activeBorderColor = Color(0xFF33FF33),
+                        activeBorderColor = themeColor,
                         inactiveBorderColor = Color.DarkGray
                     ) else SegmentedButtonDefaults.colors()
                 ) {
-                    Text("RETRO", fontSize = 9.sp)
+                    Text(if (isRetroMode) activeRetroTheme!!.name else "RETRO", fontSize = 9.sp)
                 }
             }
 
@@ -176,10 +195,10 @@ fun AdvancedCalculatorScreen(isRetroMode: Boolean, onToggleRetro: (Boolean) -> U
                             icon = {},
                             colors = if (isRetroMode) SegmentedButtonDefaults.colors(
                                 activeContainerColor = Color(0xFF222222),
-                                activeContentColor = Color(0xFF33FF33),
+                                activeContentColor = themeColor,
                                 inactiveContainerColor = Color.Black,
                                 inactiveContentColor = Color.Gray,
-                                activeBorderColor = Color(0xFF33FF33),
+                                activeBorderColor = themeColor,
                                 inactiveBorderColor = Color.DarkGray
                             ) else SegmentedButtonDefaults.colors()
                         ) {
@@ -196,7 +215,7 @@ fun AdvancedCalculatorScreen(isRetroMode: Boolean, onToggleRetro: (Boolean) -> U
             colors = CardDefaults.cardColors(
                 containerColor = if (isRetroMode) Color(0xFF1A1A1A) else MaterialTheme.colorScheme.surfaceVariant
             ),
-            border = if (isRetroMode) BorderStroke(2.dp, Color(0xFF33FF33)) else null
+            border = if (isRetroMode) BorderStroke(2.dp, themeColor) else null
         ) {
             Column(
                 modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -206,7 +225,7 @@ fun AdvancedCalculatorScreen(isRetroMode: Boolean, onToggleRetro: (Boolean) -> U
                 Text(
                     text = expression.ifEmpty { "0" },
                     fontSize = 24.sp,
-                    color = if (isRetroMode) Color(0xFF33FF33).copy(alpha = 0.5f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    color = if (isRetroMode) themeColor.copy(alpha = 0.5f) else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.End,
                     fontFamily = if (isRetroMode) FontFamily.Monospace else FontFamily.Default
@@ -217,26 +236,27 @@ fun AdvancedCalculatorScreen(isRetroMode: Boolean, onToggleRetro: (Boolean) -> U
                     text = "= $resultText",
                     fontSize = 40.sp,
                     fontWeight = FontWeight.Bold,
-                    color = if (isRetroMode) Color(0xFF33FF33) else MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = if (isRetroMode) themeColor else MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.End,
-                    fontFamily = if (isRetroMode) FontFamily.Monospace else FontFamily.Default
+                    fontFamily = if (isRetroMode) FontFamily.Monospace else FontFamily.Default,
+                    lineHeight = 46.sp
                 )
 
                 // Programmer Base Bar (Live DEC, HEX, BIN, OCT values)
                 if (currentMode == CalcMode.PROGRAMMER) {
                     HorizontalDivider(
                         modifier = Modifier.padding(vertical = 4.dp),
-                        color = if (isRetroMode) Color(0xFF33FF33).copy(alpha = 0.3f) else DividerDefaults.color
+                        color = if (isRetroMode) themeColor.copy(alpha = 0.3f) else DividerDefaults.color
                     )
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        BaseInfo("HEX", numericValue?.toString(16)?.uppercase() ?: "-", isRetroMode)
-                        BaseInfo("DEC", numericValue?.toString(10) ?: "-", isRetroMode)
-                        BaseInfo("OCT", numericValue?.toString(8) ?: "-", isRetroMode)
-                        BaseInfo("BIN", numericValue?.toString(2) ?: "-", isRetroMode)
+                        BaseInfo("HEX", numericValue?.toString(16)?.uppercase() ?: "-", themeIndex)
+                        BaseInfo("DEC", numericValue?.toString(10) ?: "-", themeIndex)
+                        BaseInfo("OCT", numericValue?.toString(8) ?: "-", themeIndex)
+                        BaseInfo("BIN", numericValue?.toString(2) ?: "-", themeIndex)
                     }
                 }
             }
@@ -245,35 +265,39 @@ fun AdvancedCalculatorScreen(isRetroMode: Boolean, onToggleRetro: (Boolean) -> U
         // Keypads
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             when (currentMode) {
-                CalcMode.BASIC -> BasicKeypad(::appendInput, ::deleteLastChar, ::clearAll, isRetroMode)
+                CalcMode.BASIC -> BasicKeypad(::appendInput, ::deleteLastChar, ::clearAll, themeIndex)
                 CalcMode.SCIENTIFIC -> ScientificKeypad(
                     isDeg = isDeg,
                     onToggleDeg = { isDeg = !isDeg },
                     onAppend = ::appendInput,
                     onDelete = ::deleteLastChar,
                     onClear = ::clearAll,
-                    isRetroMode = isRetroMode
+                    themeIndex = themeIndex
                 )
-                CalcMode.PROGRAMMER -> ProgrammerKeypad(::appendInput, ::deleteLastChar, ::clearAll, isRetroMode)
+                CalcMode.PROGRAMMER -> ProgrammerKeypad(::appendInput, ::deleteLastChar, ::clearAll, themeIndex)
             }
         }
     }
 }
 
 @Composable
-fun BaseInfo(label: String, value: String, isRetroMode: Boolean) {
+fun BaseInfo(label: String, value: String, themeIndex: Int) {
+    val isRetroMode = themeIndex > 0
+    val activeRetroTheme = if (isRetroMode) RetroThemes[themeIndex - 1] else null
+    val themeColor = activeRetroTheme?.primary ?: MaterialTheme.colorScheme.primary
+
     Column {
         Text(
             text = label,
             fontSize = 10.sp,
             fontWeight = FontWeight.Bold,
-            color = if (isRetroMode) Color(0xFF33FF33) else MaterialTheme.colorScheme.primary
+            color = if (isRetroMode) themeColor else MaterialTheme.colorScheme.primary
         )
         Text(
             text = value,
             fontSize = 12.sp,
             fontFamily = FontFamily.Monospace,
-            color = if (isRetroMode) Color(0xFF33FF33) else MaterialTheme.colorScheme.onSurface
+            color = if (isRetroMode) themeColor else MaterialTheme.colorScheme.onSurface
         )
     }
 }
@@ -287,14 +311,14 @@ fun ScientificKeypad(
     onAppend: (String) -> Unit,
     onDelete: () -> Unit,
     onClear: () -> Unit,
-    isRetroMode: Boolean
+    themeIndex: Int
 ) {
     val rows = listOf(
-        listOf("DEG/RAD", "sin", "cos", "tan", "AC"),
-        listOf("atan", "sqrt", "log", "ln", "DEL"),
-        listOf("(", ")", "^", "π", "/"),
-        listOf("7", "8", "9", "e", "*"),
-        listOf("4", "5", "6", "%", "-"),
+        listOf("sin", "cos", "tan", "AC", "DEL"),
+        listOf("sqrt", "log", "ln", "(", ")"),
+        listOf("atan", "π", "e", "^", "/"),
+        listOf("7", "8", "9", "%", "*"),
+        listOf("4", "5", "6", "DEG/RAD", "-"),
         listOf("1", "2", "3", ".", "+"),
         listOf("0", "00", "000", "=", "=")
     )
@@ -306,7 +330,7 @@ fun ScientificKeypad(
                 CalculatorButton(
                     symbol = if (btn == "DEG/RAD") (if (isDeg) "DEG" else "RAD") else btn,
                     modifier = Modifier.weight(weight).height(48.dp),
-                    isRetroMode = isRetroMode,
+                    themeIndex = themeIndex,
                     onClick = {
                         when (btn) {
                             "AC" -> onClear()
@@ -324,13 +348,13 @@ fun ScientificKeypad(
 }
 
 @Composable
-fun BasicKeypad(onAppend: (String) -> Unit, onDelete: () -> Unit, onClear: () -> Unit, isRetroMode: Boolean) {
+fun BasicKeypad(onAppend: (String) -> Unit, onDelete: () -> Unit, onClear: () -> Unit, themeIndex: Int) {
     val rows = listOf(
-        listOf("AC", "(", ")", "/", "DEL"),
-        listOf("7", "8", "9", "*", "^"),
-        listOf("4", "5", "6", "-", "%"),
-        listOf("1", "2", "3", "+", "."),
-        listOf("0", "00", "000", "=", "=")
+        listOf("7", "8", "9", "AC", "DEL"),
+        listOf("4", "5", "6", "^", "/"),
+        listOf("1", "2", "3", "%", "*"),
+        listOf("0", ".", "(", ")", "-"),
+        listOf("00", "000", "+", "=", "=")
     )
 
     rows.forEach { row ->
@@ -340,7 +364,7 @@ fun BasicKeypad(onAppend: (String) -> Unit, onDelete: () -> Unit, onClear: () ->
                 CalculatorButton(
                     symbol = btn,
                     modifier = Modifier.weight(weight).height(54.dp),
-                    isRetroMode = isRetroMode,
+                    themeIndex = themeIndex,
                     onClick = {
                         when (btn) {
                             "AC" -> onClear()
@@ -356,14 +380,14 @@ fun BasicKeypad(onAppend: (String) -> Unit, onDelete: () -> Unit, onClear: () ->
 }
 
 @Composable
-fun ProgrammerKeypad(onAppend: (String) -> Unit, onDelete: () -> Unit, onClear: () -> Unit, isRetroMode: Boolean) {
+fun ProgrammerKeypad(onAppend: (String) -> Unit, onDelete: () -> Unit, onClear: () -> Unit, themeIndex: Int) {
     val rows = listOf(
         listOf("A", "B", "C", "AC", "DEL"),
-        listOf("D", "E", "F", "/", "*"),
-        listOf("7", "8", "9", "-", "AND"),
-        listOf("4", "5", "6", "+", "OR"),
-        listOf("1", "2", "3", "XOR", "NOT"),
-        listOf("0", "(", ")", "<<", ">>"),
+        listOf("D", "E", "F", "(", "/"),
+        listOf("7", "8", "9", ")", "*"),
+        listOf("4", "5", "6", "AND", "-"),
+        listOf("1", "2", "3", "OR", "+"),
+        listOf("0", "<<", ">>", "XOR", "NOT"),
         listOf("=", "=", "=", "=", "=")
     )
 
@@ -374,7 +398,7 @@ fun ProgrammerKeypad(onAppend: (String) -> Unit, onDelete: () -> Unit, onClear: 
                 CalculatorButton(
                     symbol = btn,
                     modifier = Modifier.weight(weight).height(48.dp),
-                    isRetroMode = isRetroMode,
+                    themeIndex = themeIndex,
                     onClick = {
                         when (btn) {
                             "AC" -> onClear()
@@ -395,7 +419,10 @@ fun ProgrammerKeypad(onAppend: (String) -> Unit, onDelete: () -> Unit, onClear: 
 }
 
 @Composable
-fun CalculatorButton(symbol: String, modifier: Modifier, isRetroMode: Boolean, onClick: () -> Unit) {
+fun CalculatorButton(symbol: String, modifier: Modifier, themeIndex: Int, onClick: () -> Unit) {
+    val isRetroMode = themeIndex > 0
+    val activeRetroTheme = if (isRetroMode) RetroThemes[themeIndex - 1] else null
+
     val isOperator = symbol in listOf("+", "-", "*", "/", "^", "%", "=", "&", "|", "~", "<<", ">>")
     val isSpecial = symbol in listOf("AC", "DEL")
 
@@ -413,16 +440,16 @@ fun CalculatorButton(symbol: String, modifier: Modifier, isRetroMode: Boolean, o
             },
             contentColor = when {
                 isRetroMode -> when {
-                    isSpecial -> Color(0xFFFF9900) // Fluorescent Orange
-                    isOperator -> Color(0xFFFFFF00) // Fluorescent Yellow
-                    else -> Color(0xFF33FF33) // Fluorescent Green
+                    isSpecial -> activeRetroTheme!!.special
+                    isOperator -> activeRetroTheme!!.operator
+                    else -> activeRetroTheme!!.primary
                 }
                 isSpecial -> MaterialTheme.colorScheme.onErrorContainer
                 isOperator -> MaterialTheme.colorScheme.onPrimary
                 else -> MaterialTheme.colorScheme.onSecondaryContainer
             }
         ),
-        border = if (isRetroMode) BorderStroke(1.dp, Color(0xFF33FF33).copy(alpha = 0.2f)) else null
+        border = if (isRetroMode) BorderStroke(1.dp, activeRetroTheme!!.primary.copy(alpha = 0.2f)) else null
     ) {
         Text(
             text = symbol,
