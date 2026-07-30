@@ -129,13 +129,23 @@ fun AdvancedCalculatorScreen(themeIndex: Int, onThemeChange: (Int) -> Unit) {
     ) {
         // Top Header Caption
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-            Text(
-                text = "Calculator Extreme v1.3 by Ventsislav Negentsov",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
-                color = if (isRetroMode) themeColor else MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
+            Surface(
+                shape = RoundedCornerShape(50.dp),
+                color = Color.Transparent,
+                border = BorderStroke(
+                    width = 1.dp,
+                    color = if (isRetroMode) themeColor.copy(alpha = 0.5f) else MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+                ),
+                modifier = Modifier.padding(bottom = 12.dp)
+            ) {
+                Text(
+                    text = "Calculator Extreme v1.3 by Ventsislav Negentsov",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = if (isRetroMode) themeColor else MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+                )
+            }
 
             // Mode & Theme Selector Tabs
             MultiChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
